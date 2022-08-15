@@ -10,7 +10,7 @@ servers:
 paths:
   /zapier/new-transaction:
     post:
-      summary: Zapier subscribe to a new transaction
+      summary: Zapier subscribe to a new transaction updated
       tags:
         - zapierNewTransactionSubscribe
       requestBody:
