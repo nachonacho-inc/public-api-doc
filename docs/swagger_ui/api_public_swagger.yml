@@ -1,0 +1,194 @@
+openapi: '3.0.1'
+info:
+  title: NachoNacho Public API
+  version: 1.0.0
+
+servers:
+  - url: https://public.nachonacho.com
+    description: Production server
+
+paths:
+  /zapier/new-transaction:
+    post:
+      summary: Zapier subscribe to a new transaction
+      tags:
+        - zapierNewTransactionSubscribe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - companieId
+                - targetUrl
+              properties:
+                companieId:
+                  type: string
+                  description: the company id of the user
+                targetUrl:
+                  type: string
+                  description: the target url for the Zap
+
+      responses:
+        '201':
+          description: 'The user zap has been created successfully'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: a message stating that the user Zap has been successfully created in NachoNacho side
+                    example: OK
+        '400':
+          description: invalid request body
+          content:
+            application/text:
+              schema:
+                type: string
+                description: message explaining the body error
+                example: Missing parameters
+        '401':
+          description: unauthorized request
+        '500':
+          description: 'Internal Server Error, please retry with exponential back-off'
+      security:
+        - BearerAuth: []
+    delete:
+      summary: Unsubscribe a zap
+      tags:
+        - zapierNewTransactionUnsubscribe
+      parameters:
+        - name: companieId
+          in: header
+          description: user company id
+          required: true
+          schema:
+            type: string
+      responses:
+        '202':
+          description: 'The user zap has been deleted successfully'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: a message stating that the user Zap has been successfully deleted in NachoNacho side
+                    example: OK
+        '400':
+          description: invalid request body
+          content:
+            application/text:
+              schema:
+                type: string
+                description: message explaining the body error
+                example: Missing parameters
+        '401':
+          description: unauthorized request
+        '500':
+          description: 'Internal Server Error, please retry with exponential back-off'
+      security:
+        - BearerAuth: []
+    get:
+      summary: Get new transaction data based on companyId
+      parameters:
+        - name: companieId
+          in: header
+          description: user company id
+          required: true
+          schema:
+            type: string
+      tags:
+        - zapierNewTransactionPerformList
+      responses:
+        '200':
+          description: 'Invoice data retrieved successfully'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invoice"
+        '400':
+          description: invalid request body
+          content:
+            application/text:
+              schema:
+                type: string
+                description: message explaining the body error
+                example: Missing parameters
+        '401':
+          description: unauthorized request
+        '500':
+          description: 'Internal Server Error, please retry with exponential back-off'
+      security:
+        - BearerAuth: []
+
+
+components:
+  schemas:
+    Invoice :
+      type : object
+      description: the invoice data to be returned to Zapier
+      properties:
+        id :
+          type: string
+          description : a unique invoice id
+          example : "cx_35345klj780"
+        date:
+          type: string
+          format: date-time
+          description: the creation time of the invoice
+          example: "2021-11-12T00:00:00.000Z"
+        buyerFinalPrice :
+          type: number
+          description: the price paid by the bayer
+          example: 353.08
+        status:
+          type: string
+          enum:
+            - SUCCESSFUL
+            - PENDING
+            - DUE
+            - PAID
+            - ERROR
+            - ERROR_PAYMENT
+            - DISPUTED
+        smallId:
+          type: number
+          description: small reference id
+          example: 2342341
+        note:
+          type: string
+          description: a private note that can be set by the buyer
+        productId:
+          type : string
+          description: the id of the purchased product
+        productName:
+          type: string
+          description: the name of the purchased product
+        userName:
+          type: string
+          description: the username of the buyer
+        userEmail:
+          type : string
+          format: email
+          description: the email of the buyer
+        companieName:
+          type: string
+          description: the company name of the buyer
+        issuedCardName:
+          type: string
+          description: the name of the issued card used to pay this current invoice
+        issuedCardLast4:
+          type: string
+          description: the 4 last numbers of the card number
+        issuedCardCode:
+          type: string
+          description: the code of the card used to pay the current invoice
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
