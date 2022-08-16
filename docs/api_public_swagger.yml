@@ -12,7 +12,7 @@ paths:
     post:
       summary: Zapier subscribe to a new transaction updated
       tags:
-        - zapierNewTransactionSubscribe
+        - Subscribe to new transactions
       requestBody:
         content:
           application/json:
@@ -21,14 +21,17 @@ paths:
               required:
                 - companieId
                 - targetUrl
+                - zapId
               properties:
                 companieId:
                   type: string
-                  description: the company id of the user
+                  description: The company ID that the user wants to subscribe to
                 targetUrl:
                   type: string
-                  description: the target url for the Zap
-
+                  description: The target URL to trigger the Zap
+                zapId:
+                  type: string
+                  description: The ID of the Zap
       responses:
         '201':
           description: 'The user zap has been created successfully'
@@ -42,30 +45,57 @@ paths:
                     description: a message stating that the user Zap has been successfully created in NachoNacho side
                     example: OK
         '400':
-          description: invalid request body
+          description: Invalid request parameters
           content:
-            application/text:
+            application/json:
               schema:
-                type: string
-                description: message explaining the body error
-                example: Missing parameters
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Missing parameters
         '401':
-          description: unauthorized request
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Unauthorized
         '500':
-          description: 'Internal Server Error, please retry with exponential back-off'
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error
       security:
         - BearerAuth: []
+
     delete:
       summary: Unsubscribe a zap
       tags:
-        - zapierNewTransactionUnsubscribe
-      parameters:
-        - name: companieId
-          in: header
-          description: user company id
-          required: true
-          schema:
-            type: string
+        - Unsubscribe to new transactions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - companieId
+                - zapId
+              properties:
+                companieId:
+                  type: string
+                  description: The company ID that the user wants to subscribe to
+                zapId:
+                  type: string
+                  description: The ID of the Zap
       responses:
         '202':
           description: 'The user zap has been deleted successfully'
@@ -79,21 +109,40 @@ paths:
                     description: a message stating that the user Zap has been successfully deleted in NachoNacho side
                     example: OK
         '400':
-          description: invalid request body
+          description: Invalid request parameters
           content:
-            application/text:
+            application/json:
               schema:
-                type: string
-                description: message explaining the body error
-                example: Missing parameters
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Missing parameters
         '401':
-          description: unauthorized request
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Unauthorized
         '500':
-          description: 'Internal Server Error, please retry with exponential back-off'
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error
       security:
         - BearerAuth: []
+
     get:
-      summary: Get new transaction data based on companyId
+      summary: Get last transaction data based on company ID
       parameters:
         - name: companieId
           in: header
@@ -102,48 +151,110 @@ paths:
           schema:
             type: string
       tags:
-        - zapierNewTransactionPerformList
+        - New transactions Perform List
       responses:
         '200':
           description: 'Invoice data retrieved successfully'
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Invoice"
+                $ref: '#/components/schemas/Invoice'
         '400':
-          description: invalid request body
+          description: Invalid request parameters
           content:
-            application/text:
+            application/json:
               schema:
-                type: string
-                description: message explaining the body error
-                example: Missing parameters
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Missing parameters
         '401':
-          description: unauthorized request
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Unauthorized
         '500':
-          description: 'Internal Server Error, please retry with exponential back-off'
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error
       security:
         - BearerAuth: []
 
+  /zapier/user-companies:
+    get:
+      summary: Get list of user's companies
+      tags:
+        - Get user's companies
+      responses:
+        '200':
+          description: 'Invoice data retrieved successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Companies'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Missing parameters
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Unauthorized
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error
+      security:
+        - BearerAuth: []
 
 components:
   schemas:
-    Invoice :
-      type : object
-      description: the invoice data to be returned to Zapier
+    Invoice:
+      type: object
+      description: Invoice data to be returned to Zapier
       properties:
-        id :
+        id:
           type: string
-          description : a unique invoice id
-          example : "cx_35345klj780"
+          description: Unique invoice ID
+          example: 'cx_35345klj780'
         date:
           type: string
           format: date-time
           description: the creation time of the invoice
-          example: "2021-11-12T00:00:00.000Z"
-        buyerFinalPrice :
+          example: '2021-11-12T00:00:00.000Z'
+        buyerFinalPrice:
           type: number
-          description: the price paid by the bayer
+          description: the price paid by the buyer
           example: 353.08
         status:
           type: string
@@ -163,7 +274,7 @@ components:
           type: string
           description: a private note that can be set by the buyer
         productId:
-          type : string
+          type: string
           description: the id of the purchased product
         productName:
           type: string
@@ -172,7 +283,7 @@ components:
           type: string
           description: the username of the buyer
         userEmail:
-          type : string
+          type: string
           format: email
           description: the email of the buyer
         companieName:
@@ -187,6 +298,22 @@ components:
         issuedCardCode:
           type: string
           description: the code of the card used to pay the current invoice
+
+    Companies:
+      type: array
+      description: Basic information about the user's companies
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+            description: Unique company ID
+            example: 'cx_35345klj780'
+          name:
+            type: string
+            description: Company name
+            example: 'NachoNacho'
+
   securitySchemes:
     BearerAuth:
       type: http
